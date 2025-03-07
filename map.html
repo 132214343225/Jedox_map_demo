@@ -1,53 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dynamic Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>Sales Map</title>
     <style>
         #map { height: 600px; width: 100%; }
     </style>
+    <!-- Load Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3cK0EAe9I6c1_WojVFHdCmEnOTQTwgUs"></script>
 </head>
 <body>
     <div id="map"></div>
     <script>
-        // Initialize the map
-        const map = L.map('map').setView([40.7128, -74.0060], 4); // Default center (New York)
-
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Function to add a marker
-        function addMarker(lat, lng, sales, location) {
-            L.marker([lat, lng])
-                .addTo(map)
-                .bindPopup(`<b>${location}</b><br>Sales: $${sales}`);
-        }
-
-        // Parse URL parameters
+        // Parse URL parameters (passed from Jedox)
         const urlParams = new URLSearchParams(window.location.search);
-
-        // Extract parameters (single location example)
-        const lat = urlParams.get('lat');
-        const lng = urlParams.get('lng');
+        const lat = parseFloat(urlParams.get('lat'));
+        const lng = parseFloat(urlParams.get('lng'));
         const sales = urlParams.get('sales');
-        const location = urlParams.get('location');
 
-        // Add marker if parameters exist
-        if (lat && lng) {
-            addMarker(parseFloat(lat), parseFloat(lng), sales, location);
-        }
+        // Initialize the map
+        const map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: lat, lng: lng },
+            zoom: 12
+        });
 
-        // ---- ADVANCED: For multiple locations via JSON ----
-        // const dataParam = urlParams.get('data');
-        // if (dataParam) {
-        //     const data = JSON.parse(decodeURIComponent(dataParam));
-        //     data.forEach((item) => {
-        //         addMarker(item.lat, item.lng, item.sales, item.location);
-        //     });
-        // }
+        // Add a marker with an info window
+        const marker = new google.maps.Marker({
+            position: { lat: lat, lng: lng },
+            map: map
+        });
+
+        // Add the sales value to the info window
+        const infowindow = new google.maps.InfoWindow({
+            content: `<strong>Sales:</strong> $${sales}`
+        });
+
+        // Show the info window when the marker is clicked
+        marker.addListener('click', () => {
+            infowindow.open(map, marker);
+        });
+
+        // Automatically open the info window on load
+        infowindow.open(map, marker);
     </script>
 </body>
 </html>
